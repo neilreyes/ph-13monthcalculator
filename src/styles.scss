@@ -1,4 +1,84 @@
-.App {
-  font-family: sans-serif;
-  text-align: center;
+#app-calculator {
+  padding: 1.25rem;
+
+  &.loading{
+    .loading-overlay{
+      opacity: 1 !important;
+      z-index: 50 !important;
+    }
+  }
+}
+
+.loading-overlay{
+  opacity: 0;
+  width: 100%;
+  background-color: #a9a9a95e;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 20px;
+  transition: all 0.3s ease-in-out;
+}
+
+input[data-name="salaryEarned"]{
+  border: 0;
+  font-weight: bold;
+  background: transparent !important;
+}
+
+.computation{
+  padding: 0.1rem 0.35rem;
+  background: yellow;
+  text-align: right;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: 0;
+  min-width: 415px;
+  justify-self: flex-end;
+}
+
+tr> th{
+  vertical-align: baseline;
+}
+
+tr > th:first-child,
+tr > td:first-child{
+  max-width: 100px;
+}
+
+tr> th,
+tr > td{
+  max-width: 100px;
+}
+
+tr > th:last-child,
+tr > td:last-child{
+  max-width: 100px;
+}
+
+.sticky-bottom{
+  position: sticky;
+}
+
+th small{
+  color: #818181;
+  font-size: 12px;
+  font-style: italic;
+
+  &.empty{
+    height: 20px;
+    display: block;
+  }
+}
+
+.computation-prefix{
+  font-style: italic;
+}
+
+.app-body-container{
+  z-index: 30;
+}
+
+.form-control{
+  min-width: 100px;
 }

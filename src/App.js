@@ -1,120 +1,177 @@
 import "./styles.scss";
-import { useState, useEffect } from "react";
+import "./loading.css";
+import { useState } from "react";
 import { Month } from "./components/Month";
-
-const initialState = [
-  {
-    id: 1,
-    month: "January",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 2,
-    month: "February",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 3,
-    month: "March",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 4,
-    month: "April",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 5,
-    month: "May",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 6,
-    month: "June",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 7,
-    month: "July",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 8,
-    month: "August",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 9,
-    month: "September",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 10,
-    month: "October",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 11,
-    month: "November",
-    deduction: 0,
-    salaryEarned: 0
-  },
-  {
-    id: 12,
-    month: "December",
-    deduction: 0,
-    salaryEarned: 0
-  }
-];
+import CurrencyFormat from "react-currency-format";
+import Loading from "./components/Loading";
+import initialData from "./data/default";
 
 export default function App() {
-  const [monthData, setMonthData] = useState(initialState);
+  const [isLoading, setLoading] = useState(false);
+  const [monthData, setMonthData] = useState(initialData);
+  const [total, setTotal] = useState(0);
 
   const getSalaryByMonth = () => {
     setMonthData();
   };
 
+  const salaryHandleChangeByMonth = (values, reference) => {
+    const clonedMonthData = [...monthData];
+
+    const month = reference.current.props["data-month"];
+    const id = reference.current.props["data-id"];
+    const name = reference.current.props["data-name"];
+
+    const newValue = {
+      month,
+      id,
+      groassAmount: 0,
+      deduction: 0,
+      salaryEarned: 0
+    };
+
+    if (name === "grossAmount") {
+      newValue.grossAmount = values.floatValue;
+    } else {
+      newValue.grossAmount = clonedMonthData[id].grossAmount;
+    }
+
+    if (name === "deduction") {
+      newValue.deduction = values.floatValue;
+    } else {
+      newValue.deduction = clonedMonthData[id].deduction;
+    }
+
+    newValue.salaryEarned = parseFloat(
+      newValue.grossAmount - newValue.deduction
+    );
+
+    clonedMonthData[newValue.id] = newValue;
+
+    setMonthData((prevData) => clonedMonthData);
+  };
+
+  const calculate = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log("calculating...");
+    setTotal((prevTotal) => parseFloat(0));
+    let rawTotal = parseFloat(0);
+
+    monthData.forEach((entry) => {
+      rawTotal += entry.salaryEarned;
+    });
+
+    rawTotal = rawTotal / 12;
+
+    setTimeout(() => {
+      console.log("Done calculating!");
+      setTotal((prevTotal) => rawTotal);
+      setLoading(false);
+    }, 2000);
+  };
+
+  const reset = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log("Resetting...");
+    const newData = initialData;
+    setTimeout(() => {
+      console.log("Done resetting!");
+      setMonthData((prevData) => newData);
+      setTotal((prevTotal) => parseFloat(0));
+      setLoading(false);
+    }, 2000);
+  };
+
   return (
-    <div className="container mt-5">
-      <h1>13-Month Pay Calculator</h1>
-      <div className="table-responsive">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Month</th>
-              <th>
-                Basic Salary
-                <br />
-                <small>(in Php)</small>
-              </th>
-              <th>
-                Deduction
-                <br />
-                <small>(due to absences or late)</small>
-              </th>
-              <th>Salary Earned for the Month</th>
-            </tr>
-          </thead>
-          <tbody>
-            {monthData.map((data) => (
-              <Month
-                key={data.id}
-                data={data}
-                getSalaryByMonth={getSalaryByMonth}
-              />
-            ))}
-          </tbody>
-        </table>
+    <div
+      className={`container mt-5 position-relative ${
+        isLoading ? "loading" : ""
+      }`}
+      id="app-calculator"
+    >
+      <Loading isLoading={isLoading} />
+      <div className="app-body-container position-relative">
+        <h1>13-Month Pay Calculator</h1>
+        <div className="table-responsive">
+          <table
+            className="table"
+            disabled={isLoading ? isLoading : !isLoading}
+          >
+            <thead>
+              <tr>
+                <th>
+                  Month
+                  <br />
+                  <small className="empty"> </small>
+                </th>
+
+                <th>
+                  Basic Salary
+                  <br />
+                  <small>In PHP</small>
+                </th>
+                <th>
+                  Deduction
+                  <br />
+                  <small>Due to absences/late</small>
+                </th>
+
+                <th>
+                  Subtotal
+                  <br />
+                  <small>Salary earned for the month</small>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {monthData.map((data) => (
+                <Month
+                  key={data.id}
+                  data={data}
+                  isLoading={isLoading}
+                  salaryHandleChangeByMonth={salaryHandleChangeByMonth}
+                  getSalaryByMonth={getSalaryByMonth}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 d-flex align-content-center justify-content-between mb-5 flex-wrap">
+          <div className="col col-12 col-lg-6">
+            <button
+              className="btn btn-primary inline"
+              onClick={(e) => calculate(e)}
+              disabled={isLoading ? true : false}
+            >
+              Calculate
+            </button>
+            <button
+              className="inline btn btn-outline-secondary ms-2"
+              disabled={isLoading ? true : false}
+              onClick={(e) => reset(e)}
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="col col-12 mt-3 mt-lg-0 col-lg-6 computation-holder text-lg-end">
+            <div className="computation-prefix fw-bold">
+              13-Month Pay for this year:
+            </div>
+            <CurrencyFormat
+              className="computation text-end"
+              disabled
+              value={total}
+              displayType={"text"}
+              thousandSeparator={","}
+              fixedDecimalScale={true}
+              decimalScale={2}
+              prefix={"₱"}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
